@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Game
+Categories=Game;RolePlaying
+Comment=topdown rpg game
+Exec=src
+Terminal=false
+Icon=icon
+Type=Application
