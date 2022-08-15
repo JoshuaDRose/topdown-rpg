@@ -5,6 +5,8 @@ import random
 
 import lib
 
+from io import *
+
 import pygame
 
 from pygame.locals import *
@@ -19,6 +21,16 @@ screens = {
         "game": False,
         "options": False
         }
+
+def load_saveFile() -> TextIOWrapper:
+    """
+        load latest save file
+    """
+    files = []
+    for n in glob.glob(SAVE):
+        files.append(n)
+    if files:
+        return open(files[len(files)-1], 'r')
 
 def make_saveFile() -> None:
     """
@@ -74,6 +86,7 @@ def main():
     global SCREEN
 
     tick = 0
+
 
     if screens['menu']:
         # Menu loop
