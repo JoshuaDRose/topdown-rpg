@@ -12,11 +12,12 @@ import pygame
 
 from pygame.locals import *
 
+pygame.display.init()
+
 HOME = os.path.expanduser("~")
 SAVE = os.path.join(HOME, "topdown-rpg")
-SIZE = (960, 540)
-SCREEN = pygame.display.set_mode((960, 540), 0, 32) # Assuming the display is 1920 x 1080
-pygame.display.set_caption(HOME)
+SIZE = (1280, 720)
+SCREEN = pygame.display.set_mode(SIZE, 0, 32)
 
 screens = {
         "menu": False,
@@ -93,7 +94,7 @@ def main():
     mouse_visible = True
     clock = pygame.time.Clock()
     pygame.mouse.set_visible(mouse_visible)
-
+    level = lib.Level()
     if verify_save():
         switch_context("menu")
 
@@ -134,24 +135,10 @@ def main():
             pygame.display.update()
             clock.tick(24)
 
-    if screens['game']:
-        running = True
-        player = lib.Player()
-        while running:
-            mp = pygame.mouse.get_pos()
-            SCREEN.fill(pygame.Color('black'))
-            game_tick += 1
-            for ev in pygame.event.get():
-                if ev.type == QUIT:
-                    running = False
-                if ev.type == KEYDOWN:
-                    if ev.key == K_ESCAPE:
-                        running = False
-                    if ev.key == K_q:
-                        running = False
 
-            pygame.display.update()
-            clock.tick(60)
+    if screens['game']:
+        level.run()
+
 
 if __name__ == "__main__":
     main()
