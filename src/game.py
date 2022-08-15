@@ -75,5 +75,17 @@ def main():
 
     tick = 0
 
+    if screens['menu']:
+        # Menu loop
+        while 1:
+            for ev in pygame.event.get():
+                if ev.type == QUIT:
+                    break
+                if ev.type == KEYDOWN:
+                    if ev.key == K_ESCAPE:
+                        break
+                    if ev.key == K_q:
+                        break
+
 if __name__ == "__main__":
     main()
