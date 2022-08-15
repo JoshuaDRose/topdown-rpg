@@ -1,4 +1,5 @@
 import os
+import time
 import glob
 import math
 import random
@@ -12,7 +13,8 @@ import pygame
 from pygame.locals import *
 
 HOME = os.path.expanduser("~")
-SAVE = os.path.join(HOME, ".topdown")
+SAVE = os.path.join(HOME, "topdown-rpg")
+SIZE = (960, 540)
 SCREEN = pygame.display.set_mode((960, 540), 0, 32) # Assuming the display is 1920 x 1080
 pygame.display.set_caption(HOME)
 
@@ -50,7 +52,10 @@ def verify_save() -> bool:
         Verify file location exists
     """
     try:
-        return os.path.exists(SAVE)
+        if os.getcwd() == SAVE:
+            return True
+        else:
+            return os.path.exists(SAVE)
     except PermissionError:
         raise PermissionError
 
@@ -69,7 +74,7 @@ def save() -> bool:
     else:
         make_saveFile()
 
-def switch_context(ctx) -> dict:
+def switch_context(ctx):
     """
         ctx: Window context from __main__.screens
     """
@@ -85,20 +90,68 @@ def main():
 
     global SCREEN
 
-    tick = 0
+    mouse_visible = True
+    clock = pygame.time.Clock()
+    pygame.mouse.set_visible(mouse_visible)
 
+    if verify_save():
+        switch_context("menu")
+
+    game_tick = 0 # only increments in game loop
 
     if screens['menu']:
-        # Menu loop
-        while 1:
+        running = True
+        play_text_color = pygame.Color("grey")
+        play_text = {"text": lib.h1("PLAY", (play_text_color))}
+        play_text["rect"] = play_text["text"].get_rect(center=(SIZE[0] / 2, SIZE[1] / 2))
+        play_text_colliding = False
+        while running:
+            mp = pygame.mouse.get_pos()
+            SCREEN.fill((0, 0, 0))
             for ev in pygame.event.get():
                 if ev.type == QUIT:
-                    break
+                    running = False
                 if ev.type == KEYDOWN:
                     if ev.key == K_ESCAPE:
-                        break
+                        running = False
                     if ev.key == K_q:
-                        break
+                        running = False
+                if play_text["rect"].collidepoint(mp):
+                    play_text_color = pygame.Color("white")
+                    play_text["text"] = lib.h1("PLAY", play_text_color)
+                    play_text_colliding = True
+                    if ev.type == MOUSEBUTTONDOWN:
+                        switch_context("game")
+                        switch_context("menu")
+                        running = False
+                else:
+                    play_text_color = pygame.Color("grey")
+                    play_text["text"] = lib.h1("PLAY", play_text_color)
+                    play_text_colliding = False
+
+            play_text["rect"].y = (SIZE[1] / 2 - play_text["text"].get_height() / 2) + math.sin(time.time() * 4) * 6
+            SCREEN.blit(play_text["text"], play_text["rect"])
+            pygame.display.update()
+            clock.tick(24)
+
+    if screens['game']:
+        running = True
+        player = lib.Player()
+        while running:
+            mp = pygame.mouse.get_pos()
+            SCREEN.fill(pygame.Color('black'))
+            game_tick += 1
+            for ev in pygame.event.get():
+                if ev.type == QUIT:
+                    running = False
+                if ev.type == KEYDOWN:
+                    if ev.key == K_ESCAPE:
+                        running = False
+                    if ev.key == K_q:
+                        running = False
+
+            pygame.display.update()
+            clock.tick(60)
 
 if __name__ == "__main__":
     main()
