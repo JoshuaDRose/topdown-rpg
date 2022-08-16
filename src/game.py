@@ -137,8 +137,16 @@ def main():
 
 
     if screens['game']:
-        level.run()
-
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    running = False
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        running = False
+            level.run()
+            pygame.display.update()
 
 if __name__ == "__main__":
     main()
