@@ -1,5 +1,5 @@
 import pygame
-from .spritesheet import SpriteSheet
+from .spritesheet import * 
 
 class Animator(object):
     def __init__(self, filename, rect, count, key, loop, frames=1):

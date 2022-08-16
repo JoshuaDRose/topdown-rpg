@@ -147,6 +147,7 @@ def main():
                         running = False
             level.run()
             pygame.display.update()
+            clock.tick(60)
 
 if __name__ == "__main__":
     main()

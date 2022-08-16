@@ -6,31 +6,48 @@ import sys
 import glob
 
 
-class SpriteSheet(object):
-    def __init__(self, filename):
-        try:
-            self.sheet = pygame.image.load(filename).convert()
-        except pygame.error as message:
-            print(f"Unable to load spritesheet: {filename}")
-            raise SystemExit
+if not pygame.display.get_init():
+    pygame.display.init()
 
-    def image_at(self, rect, key=None):
-        """ Load image from rect """
-        rect = pygame.Rect(rect)
-        image = pygame.Surface(rect.size).convert()
-        image.blit(self.sheet, (0, 0), rect)
-        if key:
-            if key is -1:
-                key = image.get_at((0, 0))
-            image.set_colorkey(key, pygame.RLEACCEL)
-        return image
+def load_sprite_sheet(file) -> pygame.Surface:
+    return pygame.image.load(file).convert()
 
-    def images_at(self, rects, key=None):
-        """ Load multiple images from rect """
-        return [self.image_at(rect, key) for rect in rects]
+def image_at(sheet, rect, key=None) -> pygame.Surface:
+    """
+        Description: Load an image from rect
+        rect: tuple | list
+        key: bool | tuple
+    """
+    image_rect = pygame.Rect(rect)
+    image = pygame.Surface(image_rect.size).convert()
+    image.blit(sheet, (0, 0), image_rect)
+    if key is not None:
+        if key is -1:
+            key = image.get_at((0, 0))
+        image.set_colorkey(key, pygame.RLEACCEL)
+    return image
 
-    def load_strip(self, rect, image_count, key=None):
-        """ Load strip of sprites as list """
-        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
-                for x in range(image_count)]
-        return self.images_at(tups, key)
+def images_at(rects, key=None) -> list:
+    """
+        Description: Load multiple images from a list or tuple
+        rects: list | tuple
+        key: boolean | tuple
+    """
+    images = []
+
+    for rect in rects:
+        images.append(image_at(rect, key))
+
+    return images
+
+
+def load_strip(rect, image_count, key=None) -> list:
+    """
+        Description: Return list of sprites from strip
+        image_count: integer
+        key: boolean | tuple
+    """
+    tups = [(rect[0] + rect[2] * x, rect[1], rect[2], rect[3])
+            for x in range(image_count)]
+    return images_at(tups, key)
+
