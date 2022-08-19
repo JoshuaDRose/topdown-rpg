@@ -5,7 +5,10 @@ except ImportError:
 
 
 class Configure(ConfigParser):
-    """ Config parser permits the instantiation of .ini file formats as a file-io object """
+    """
+        Config parser permits the instantiation of
+        .ini file formats as a file-io object
+    """
     def __init__(self, path):
         """ Configure constructure should be able to load ConfigParser methods """
         ConfigParser.__init__(self)

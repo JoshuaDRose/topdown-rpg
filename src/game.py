@@ -91,9 +91,11 @@ def main():
 
     global SCREEN
 
-    mouse_visible = True
+    mouse_visible = False
     clock = pygame.time.Clock()
     pygame.mouse.set_visible(mouse_visible)
+    cursor = lib.Cursor((SIZE[0]/2, SIZE[1]/2))
+
     level = lib.Level()
     if verify_save():
         switch_context("menu")
@@ -112,10 +114,17 @@ def main():
             for ev in pygame.event.get():
                 if ev.type == QUIT:
                     running = False
+                if ev.type == MOUSEMOTION:
+                    cursor.mousepos = pygame.mouse.get_pos()
+                    cursor.update()
                 if ev.type == KEYDOWN:
                     if ev.key == K_ESCAPE:
                         running = False
                     if ev.key == K_q:
+                        running = False
+                    if ev.key == K_RETURN:
+                        switch_context("game")
+                        switch_context("menu")
                         running = False
                 if play_text["rect"].collidepoint(mp):
                     play_text_color = pygame.Color("white")
@@ -132,20 +141,26 @@ def main():
 
             play_text["rect"].y = (SIZE[1] / 2 - play_text["text"].get_height() / 2) + math.sin(time.time() * 4) * 6
             SCREEN.blit(play_text["text"], play_text["rect"])
+            SCREEN.blit(cursor.image, cursor.rect)
             pygame.display.update()
-            clock.tick(24)
+            clock.tick(60)
 
 
     if screens['game']:
         running = True
+
         while running:
             for event in pygame.event.get():
+                if event.type == MOUSEMOTION:
+                    cursor.mousepos = pygame.mouse.get_pos()
+                    cursor.update()
                 if event.type == QUIT:
                     running = False
                 if event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         running = False
             level.run()
+            SCREEN.blit(cursor.image, cursor.rect)
             pygame.display.update()
             clock.tick(60)
 

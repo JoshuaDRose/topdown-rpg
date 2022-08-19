@@ -1,6 +1,7 @@
 import pygame
 from .spritesheet import * 
 
+
 class Animator(object):
     def __init__(self, filename, rect, count, key, loop, frames=1):
         self.filename = filename

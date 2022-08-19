@@ -10,7 +10,7 @@ if not pygame.display.get_init():
     pygame.display.init()
 
 def load_sprite_sheet(file) -> pygame.Surface:
-    return pygame.image.load(file).convert()
+    return pygame.image.load(file)
 
 def image_at(sheet, rect, key=None) -> pygame.Surface:
     """
@@ -19,12 +19,17 @@ def image_at(sheet, rect, key=None) -> pygame.Surface:
         key: bool | tuple
     """
     image_rect = pygame.Rect(rect)
-    image = pygame.Surface(image_rect.size).convert()
-    image.blit(sheet, (0, 0), image_rect)
+
     if key is not None:
+        image = pygame.Surface(image_rect.size).convert()
+        image.blit(sheet, (0, 0), image_rect)
         if key is -1:
             key = image.get_at((0, 0))
         image.set_colorkey(key, pygame.RLEACCEL)
+    else:
+        image = pygame.Surface(image_rect.size, pygame.SRCALPHA)
+        image.set_colorkey((0,0,0))
+        image.blit(sheet, (0, 0), image_rect)
     return image
 
 def images_at(rects, key=None) -> list:
