@@ -217,30 +217,11 @@ class Player(pygame.sprite.Sprite):
         moving = any((self.left, self.up, self.down, self.right))
         self.animation = self.walking_positions[self.state]
 
-        if not self.attack:
-            if abs(self.acc.x) < self.current_maxvel:
-                self.acc.x += round(self.vel.x * FRIC, 7)
-            if abs(self.acc.y) < self.current_maxvel:
-                self.acc.y += round(self.vel.y * FRIC, 7)
+        if abs(self.acc.x) < self.current_maxvel:
+            self.acc.x += round(self.vel.x * FRIC, 7)
+        if abs(self.acc.y) < self.current_maxvel:
+            self.acc.y += round(self.vel.y * FRIC, 7)
 
-        if self.left and (self.up or self.down):
-            self.diagonal = True
-        elif self.right and (self.up or self.down):
-            self.diagonal = True
-        elif self.up and (self.left or self.right):
-            self.diagonal = True
-        elif self.down and (self.left or self.right):
-            self.diagonal = True
-        else:
-            self.current_maxvel = MAXVEL
-            if self.vel_cooldown == 0:
-                self.diagonal = False
-            else:
-                self.vel_cooldown -= 1
-
-        if self.diagonal:
-            self.current_maxvel = MAXVEL / 2
-            self.vel_cooldown = 50
 
         if not moving:
             self.vel.x = 0
