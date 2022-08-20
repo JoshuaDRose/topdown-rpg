@@ -7,7 +7,7 @@ from .spritesheet import *
 from pygame.locals import *
 from .consts import *
 from .utils import *
-
+from .timer import Timer
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, position, groups):
@@ -36,6 +36,10 @@ class Player(pygame.sprite.Sprite):
 
         self.default_maxvel = MAXVEL
         self.current_maxvel = self.default_maxvel
+
+        self.timers = {
+            "sword": Timer(350, self.)
+        }
 
         self.slash_animation = [
             [
@@ -120,6 +124,21 @@ class Player(pygame.sprite.Sprite):
         self.stop = False
 
 
+    def attack(self):
+        """ Swing sword """
+        if self.timers["sword"].st == 0:
+            self.n = 0
+        else:
+            if self.tick == 10:
+                if self.n >= len(self.slashing[self.state]):
+                    self.timers["sword"].deactivate()
+                else:
+                    self.n += 1
+                self.tick = 0
+
+
+
+
     def regulate_frames(self):
         """ Statute the player frame rate to a set interavl """
         self.player_tick.draw_text('player tick', self.tick)
@@ -127,26 +146,27 @@ class Player(pygame.sprite.Sprite):
         self.player_velocity.draw_text('speed', f'{round(self.vel.x, 1)} {round(self.vel.y, 1)}')
         self.player_acceleration.draw_text('accel', f'{round(self.acc.x, 3)} {round(self.acc.y, 1)}')
 
-        if self.tick == 10:
-            # THIS COODE IS PROBLEMATIC
-            """
-            if self.attack:
-                self.n = 0
-                if self.n >= len(self.slashing[self.state]):
-                    self.attack = False
-                self.image = self.slashing[self.state][self.n]
-                self.n += 1
-            """
-            if self.stop:
-                self.image = self.walking[self.state][0]
-            else:
-                self.n += 1
-                if self.n >= len(self.walking[self.state]):
+        if not self.timers["sword"].active:
+            if self.tick == 10:
+                # THIS COODE IS PROBLEMATIC
+                """
+                if self.attack:
                     self.n = 0
-                self.image = self.walking[self.state][self.n]
-            self.tick = 0
-        self.tick += 1
-        self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
+                    if self.n >= len(self.slashing[self.state]):
+                        self.attack = False
+                    self.image = self.slashing[self.state][self.n]
+                    self.n += 1
+                """
+                if self.stop:
+                    self.image = self.walking[self.state][0]
+                else:
+                    self.n += 1
+                    if self.n >= len(self.walking[self.state]):
+                        self.n = 0
+                    self.image = self.walking[self.state][self.n]
+                self.tick = 0
+            self.tick += 1
+            self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
 
 
     def update(self):
