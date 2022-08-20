@@ -259,8 +259,11 @@ class Player(pygame.sprite.Sprite):
 
         if self.do_movement:
             self.vel += self.acc
-            self.pos += self.vel + 0.5 * self.acc
 
-        self.rect.midbottom = self.pos
+            self.pos.x += self.vel.x + 0.5 * self.acc.x
+            self.rect.centerx = self.pos.x
+
+            self.pos.y += self.vel.y + 0.5 * self.acc.y
+            self.rect.centery = self.pos.y
 
         self.regulate_frames()
