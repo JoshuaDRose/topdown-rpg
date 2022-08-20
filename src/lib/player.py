@@ -25,7 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.player_tick         = lib.debug.Text((0, 0))
         self.player_state        = lib.debug.Text((0, 20))
         self.player_velocity     = lib.debug.Text((0, 40))
-        self.player_acceleration = lib.debug.Text((0, 60))
+        self.player_attack_tick  = lib.debug.Text((0, 60))
+        self.player_acceleration = lib.debug.Text((0, 80))
 
         self.vec = pygame.math.Vector2
         self.vel = self.vec(0, 0)
@@ -38,33 +39,42 @@ class Player(pygame.sprite.Sprite):
         self.current_maxvel = self.default_maxvel
 
         self.timers = {
-            "sword": Timer(350, self.)
+            "sword": Timer(350, self.attack)
         }
 
         self.slash_animation = [
+            # idle
+            [
+            (0, 128, 32, 32)
+            ],
+            # forward
             [
             (0, 128, 32, 32),
             (32, 128, 32, 32),
             (64, 128, 32, 32),
             (96, 128, 32, 32)
             ],
+            # back
             [
-            (0, 160, 32, 32),
-            (32, 160, 32, 32),
-            (64, 160, 32, 32),
-            (11, 160, 32, 32)
-            ],
-            [
-            (11, 192, 32, 32),
+            (0, 192, 32, 32),
             (32, 192, 32, 32),
             (64, 192, 32, 32),
             (96, 192, 32, 32)
             ],
+            # right
+            [
+            (0, 160, 32, 32),
+            (32, 160, 32, 32),
+            (64, 160, 32, 32),
+            (96, 160, 32, 32)
+            ],
+            # left
             [
             (0, 224, 32, 32),
             (32, 224, 32, 32),
             (64, 224, 32, 32),
             (96, 224, 32, 32)]]
+
         self.walking_positions = [
             # idle
             [
@@ -123,27 +133,36 @@ class Player(pygame.sprite.Sprite):
         self.right = False
         self.stop = False
 
+        self.attacking = False
+        self.holding_attack = False
 
-    def attack(self):
-        """ Swing sword """
-        if self.timers["sword"].st == 0:
-            self.n = 0
-        else:
-            if self.tick == 10:
-                if self.n >= len(self.slashing[self.state]):
-                    self.timers["sword"].deactivate()
-                else:
-                    self.n += 1
-                self.tick = 0
-
-    def regulate_frames(self):
-        """ Statute the player frame rate to a set interavl """
+    def draw_debug(self):
         self.player_tick.draw_text('player tick', self.tick)
         self.player_state.draw_text('player state', self.state)
         self.player_velocity.draw_text('speed', f'{round(self.vel.x, 1)} {round(self.vel.y, 1)}')
+        self.player_attack_tick.draw_text('attack', self.attacking)
         self.player_acceleration.draw_text('accel', f'{round(self.acc.x, 3)} {round(self.acc.y, 1)}')
 
-        if not self.timers["sword"].active:
+
+
+    def attack(self):
+        """ Swing sword """
+        if self.attacking:
+            if self.tick == 10:
+                self.n += 1
+                if self.n >= len(self.slashing[self.state]):
+                    self.attacking = False
+                    self.n = 0
+                    self.tick = 0
+                else:
+                    self.image = self.slashing[self.state][self.n]
+                    print(self.image.get_rect())
+                self.tick = 0
+            self.tick += 1
+
+    def regulate_frames(self):
+        """ Statute the player frame rate to a set interavl """
+        if not self.attacking:
             if self.tick == 10:
                 # THIS COODE IS PROBLEMATIC
                 """
@@ -163,6 +182,7 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.walking[self.state][self.n]
                 self.tick = 0
             self.tick += 1
+            print(self.image.get_rect())
             self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
 
 
@@ -175,7 +195,8 @@ class Player(pygame.sprite.Sprite):
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[K_LEFT]:
-            self.state = 4
+            if not self.attacking:
+                self.state = 4
             self.acc.x = -ACC
             self.left = True
         else:
@@ -184,7 +205,8 @@ class Player(pygame.sprite.Sprite):
                 self.acc.x = 0
 
         if pressed_keys[K_RIGHT]:
-            self.state = 2
+            if not self.attacking:
+                self.state = 2
             self.acc.x = ACC
             self.right = True
         else:
@@ -193,7 +215,8 @@ class Player(pygame.sprite.Sprite):
                 self.acc.x = 0
 
         if pressed_keys[K_UP]:
-            self.state = 3
+            if not self.attacking:
+                self.state = 3
             self.acc.y = -ACC
             self.up = True
         else:
@@ -202,7 +225,8 @@ class Player(pygame.sprite.Sprite):
                 self.acc.y = 0
 
         if pressed_keys[K_DOWN]:
-            self.state = 1
+            if not self.attacking:
+                self.state = 1
             self.acc.y = ACC
             self.down = True
         else:
@@ -212,7 +236,13 @@ class Player(pygame.sprite.Sprite):
 
         if pressed_keys[K_c]:
             """ NOTE: Cannot move and attack simultaneously """
-            self.attack = True
+            if not self.attacking:
+                if not self.holding_attack:
+                    self.n = 0
+                    self.attacking = True
+        else:
+            self.holding_attack = False
+
 
         if self.acc.x == 0 and self.acc.y == 0:
             self.stop = True
@@ -220,7 +250,12 @@ class Player(pygame.sprite.Sprite):
             self.stop = False
 
         moving = any((self.left, self.up, self.down, self.right))
-        self.animation = self.walking_positions[self.state]
+
+        if self.attacking:
+            moving = False
+            self.attack()
+        else:
+            self.animation = self.walking_positions[self.state]
 
         if abs(self.acc.x) < self.current_maxvel:
             self.acc.x += round(self.vel.x * FRIC, 7)
@@ -233,6 +268,8 @@ class Player(pygame.sprite.Sprite):
             self.vel.y = 0
             self.acc.x = 0
             self.acc.y = 0
+        else:
+            self.do_movement = 1
 
         if self.do_movement:
             self.vel += self.acc
@@ -244,3 +281,4 @@ class Player(pygame.sprite.Sprite):
             self.rect.centery = self.pos.y
 
         self.regulate_frames()
+        self.draw_debug()
