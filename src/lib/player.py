@@ -136,9 +136,6 @@ class Player(pygame.sprite.Sprite):
                     self.n += 1
                 self.tick = 0
 
-
-
-
     def regulate_frames(self):
         """ Statute the player frame rate to a set interavl """
         self.player_tick.draw_text('player tick', self.tick)
