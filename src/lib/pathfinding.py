@@ -9,9 +9,8 @@ def find_path(matrix, end, start=(0,0)):
 	"""
 	start = grid.node(start)
 	end = grid.node(end)
-
 	finder = Finder()
-
 	path, runs = finder.find_path(start, end)
 
 	return path
+	

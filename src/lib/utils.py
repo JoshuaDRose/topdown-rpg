@@ -1,6 +1,5 @@
 import pygame
 
-
 if not pygame.display.init():
     print("Initializing pygame display from utils")
     pygame.display.init()

@@ -3,6 +3,7 @@ from .utils import *
 
 class Cursor:
 	def __init__(self, position):
+		""" Essential cursor params """
 		path = r'sprites/ui/screen/cursor.png'
 		sf = 2 # scale factor
 		size = scale_sprite(path, sf)
@@ -14,5 +15,6 @@ class Cursor:
 		print("mouse.visible=false")
 
 	def update(self):
+		""" Update cursor position """
 		self.rect.x, self.rect.y = self.mousepos
 		

@@ -13,5 +13,3 @@ class Configure(ConfigParser):
         """ Configure constructure should be able to load ConfigParser methods """
         ConfigParser.__init__(self)
         self.path = path
-
-

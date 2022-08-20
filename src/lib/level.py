@@ -29,5 +29,3 @@ class Level:
         self.display_surface.fill(white)
         self.sprites_visible.update()
         self.sprites_visible.draw(self.display_surface)
-
-

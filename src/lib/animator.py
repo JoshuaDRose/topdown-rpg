@@ -13,11 +13,13 @@ class Animator(object):
         self.f = frames
 
     def iter(self):
+        """ set frame iterators """
         self.i = 0
         self.f = self.frames
         return self
 
     def next(self):
+        """ Goto next frame """
         if self.i >= len(self.iamges):
             if not self.loop:
                 raise StopIteration
@@ -31,5 +33,6 @@ class Animator(object):
         return image
     
     def __add__(self, sheet):
+        """ Add surface to spritesheet """
         self.images.extend(sheet.images)
         return self

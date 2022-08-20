@@ -5,11 +5,11 @@ import os
 import sys
 import glob
 
-
 if not pygame.display.get_init():
     pygame.display.init()
 
 def load_sprite_sheet(file) -> pygame.Surface:
+    """ Load spritesheet as a surface """
     return pygame.image.load(file)
 
 def image_at(sheet, rect, key=None) -> pygame.Surface:
@@ -55,4 +55,3 @@ def load_strip(rect, image_count, key=None) -> list:
     tups = [(rect[0] + rect[2] * x, rect[1], rect[2], rect[3])
             for x in range(image_count)]
     return images_at(tups, key)
-
