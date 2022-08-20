@@ -15,35 +15,28 @@ class Player(pygame.sprite.Sprite):
         spritesheet = load_sprite_sheet(r'sprites/world/tileset/gfx/character.png')
         sheet_rect = spritesheet.get_rect()
         scaled = (sheet_rect.width * 3, sheet_rect.height * 3)
-        self.spritesheet = pygame.transform.scale(spritesheet, scaled)
-        self.animation = []
-        self.walking = [[],[],[],[],[]]
-        self.walking_flipped = [[],[],[],[],[]]
-        self.idle = [[],[],[],[],[]]
-        self.slashing = [[],[],[],[],[]]
 
-        self.player_tick = lib.debug.Text((0, 0))
-        self.player_state = lib.debug.Text((0, 20))
-        self.player_velocity = lib.debug.Text((0, 40))
+        self.spritesheet = pygame.transform.scale(spritesheet, scaled)
+        self.animation   = []
+        self.walking     = [[], [], [], [], []]
+        self.idle        = [[], [], [], [], []]
+        self.slashing    = [[], [], [], [], []]
+
+        self.player_tick         = lib.debug.Text((0, 0))
+        self.player_state        = lib.debug.Text((0, 20))
+        self.player_velocity     = lib.debug.Text((0, 40))
         self.player_acceleration = lib.debug.Text((0, 60))
 
-        slash_cooldown_timer = 200
+        self.vec = pygame.math.Vector2
+        self.vel = self.vec(0, 0)
+        self.acc = self.vec(0, 0)
 
-        vec = self.vec = pygame.math.Vector2
-        self.vel = vec(0, 0)
-        self.acc = vec(0, 0)
-
-        self.change_dir = False
         self.state = 0
         self.do_movement = False
-        self.attack = False
 
-        scale = 1
         self.default_maxvel = MAXVEL
         self.current_maxvel = self.default_maxvel
-        self.vel_cooldown = 0
 
-        # x y width height
         self.slash_animation = [
             [
             (0, 128, 32, 32),
@@ -68,7 +61,6 @@ class Player(pygame.sprite.Sprite):
             (32, 224, 32, 32),
             (64, 224, 32, 32),
             (96, 224, 32, 32)]]
-
         self.walking_positions = [
             # idle
             [
@@ -104,36 +96,28 @@ class Player(pygame.sprite.Sprite):
 
         for index, array in enumerate(self.walking_positions):
             for n in self.walking_positions[index]:
-                scaled = (scale_normal(n, 3)[0], scale_normal(n, 3)[1], n[2]*3, n[3]*3)
+                scaled = (scale_normal(n, 3)[0], scale_normal(n, 3)[1], n[2] * 3, n[3] * 3)
                 image = image_at(self.spritesheet, scaled)
                 self.walking[index].append(image)
             self.idle[index].append(self.walking_positions[index][0])
 
         for index, array in enumerate(self.slash_animation):
             for n in self.slash_animation[index]:
-                scaled = (scale_normal(n, 3)[0], scale_normal(n, 3)[1], n[2]*3, n[3]*3)
+                scaled = (scale_normal(n, 3)[0], scale_normal(n, 3)[1], n[2] * 3, n[3] * 3)
                 image = image_at(self.spritesheet, scaled)
                 self.slashing[index].append(image)
 
         self.n = 0
         self.tick = 0
         self.image = self.walking[self.state][self.n]
-        self.invincible = False
-        self.health: int = 20
         self.rect = pygame.Rect(position, (16, 16))
-        self.previous_rect = self.rect
-        self.pos = vec((WIDTH / 2 - self.rect.width / 2, 385))
-        self.diagonal = False
+        self.pos = self.vec((WIDTH / 2 - self.rect.width / 2, 385))
 
-        # keys being pressed
         self.up = False
         self.down = False
         self.left = False
         self.right = False
-
         self.stop = False
-        self.cooling = False
-        self.n = 50
 
 
     def regulate_frames(self):
@@ -142,14 +126,18 @@ class Player(pygame.sprite.Sprite):
         self.player_state.draw_text('player state', self.state)
         self.player_velocity.draw_text('speed', f'{round(self.vel.x, 1)} {round(self.vel.y, 1)}')
         self.player_acceleration.draw_text('accel', f'{round(self.acc.x, 3)} {round(self.acc.y, 1)}')
+
         if self.tick == 10:
+            # THIS COODE IS PROBLEMATIC
+            """
             if self.attack:
                 self.n = 0
                 if self.n >= len(self.slashing[self.state]):
                     self.attack = False
                 self.image = self.slashing[self.state][self.n]
                 self.n += 1
-            elif self.stop:
+            """
+            if self.stop:
                 self.image = self.walking[self.state][0]
             else:
                 self.n += 1
@@ -158,7 +146,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.walking[self.state][self.n]
             self.tick = 0
         self.tick += 1
-        self.rect = self.image.get_rect(center=(self.pos.x/2, self.pos.y/2))
+        self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
 
 
     def update(self):
@@ -219,24 +207,15 @@ class Player(pygame.sprite.Sprite):
 
         if abs(self.acc.x) < self.current_maxvel:
             self.acc.x += round(self.vel.x * FRIC, 7)
+
         if abs(self.acc.y) < self.current_maxvel:
             self.acc.y += round(self.vel.y * FRIC, 7)
-
 
         if not moving:
             self.vel.x = 0
             self.vel.y = 0
             self.acc.x = 0
             self.acc.y = 0
-
-        if moving:
-            if not self.attack:
-                self.do_movement = True
-            else:
-                self.vel.x = 0
-                self.vel.y = 0
-                self.acc.x = 0
-                self.acc.y = 0
 
         if self.do_movement:
             self.vel += self.acc
