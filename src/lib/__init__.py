@@ -8,3 +8,4 @@ from .utils import *
 from .spritesheet import *
 from .consts import *
 from .pathfinding import find_path
+from .timer import Timer
