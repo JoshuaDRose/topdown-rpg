@@ -157,7 +157,7 @@ def main():
                     running = False
                 if event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
-                        running = False
+                        running = False 
 
             level.run()
 
