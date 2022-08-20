@@ -1,13 +1,14 @@
+""" Game.py """
 import os
 import time
 import glob
 import math
-import random
-import lib
+
+from io import TextIOWrapper
+
 import pygame
 
-from io import *
-from pygame.locals import *
+import lib
 
 pygame.display.init()
 
@@ -22,28 +23,29 @@ screens = {
         "options": False
         }
 
-def load_saveFile() -> TextIOWrapper:
+def load_save_file() -> TextIOWrapper:
     """
         load latest save file
     """
     files = []
-    for n in glob.glob(SAVE):
-        files.append(n)
-    if files:
-        return open(files[len(files) - 1], 'r')
+    for _ in glob.glob(SAVE):
+        files.append(_)
+    with open(files[len(files) - 1], 'r') as file:
+        return file
 
-def make_saveFile() -> None:
+def make_save_file() -> None:
     """
         Create a save file
     """
     save_files = []
-    for n in os.path.walk(SAVE):
-        save_files.append(n)
+    for _ in os.path.abspath(SAVE):
+        save_files.append(_)
     file_save = str(len(save_files)) + '.save'
     try:
-        file = open(file_save, 'w')
-    except PermissionError:
-        raise PermissionError
+        with open(file_save, 'w') as _:
+            pass
+    except PermissionError as exc:
+        raise PermissionError from exc
 
 def verify_save() -> bool:
     """
@@ -52,24 +54,16 @@ def verify_save() -> bool:
     try:
         if os.getcwd() == SAVE:
             return True
-        else:
-            return os.path.exists(SAVE)
-    except PermissionError:
-        raise PermissionError
+        return os.path.exists(SAVE)
+    except PermissionError as exc:
+        raise PermissionError from exc
 
 def save() -> bool:
     """
         save game state
     """
-    verify_save = False
-    try:
-        verify_save = verify_save()
-    except PermissionError:
-        return None
-    if verify_save:
-        pass
-    else:
-        make_saveFile()
+    save_verified = verify_save()
+    return save_verified
 
 def switch_context(ctx):
     """
@@ -77,25 +71,22 @@ def switch_context(ctx):
     """
     try:
         screens[ctx] = not screens[ctx]
-    except KeyError:
-        raise KeyError
+    except KeyError as exc:
+        raise KeyError from exc
 
 def main():
     """
         Main loop - menu, options, game
     """
-    global SCREEN
 
     mouse_visible = False
     clock = pygame.time.Clock()
     pygame.mouse.set_visible(mouse_visible)
     cursor = lib.Cursor((SIZE[0] / 2, SIZE[1] / 2))
+    level = lib.level.Level()
 
-    level = lib.Level()
     if verify_save():
         switch_context("menu")
-
-    game_tick = 0 # only increments in game loop
 
     if screens['menu']:
         running = True
@@ -103,42 +94,41 @@ def main():
         play_text_color = pygame.Color("grey")
         play_text = {"text": lib.h1("PLAY", (play_text_color))}
         play_text["rect"] = play_text["text"].get_rect(center=(SIZE[0] / 2, SIZE[1] / 2))
-        play_text_colliding = False
+        delta_time = time.time()
 
         while running:
-            mp = pygame.mouse.get_pos()
+            delta_time = time.time()
+            mouse_position = pygame.mouse.get_pos()
             SCREEN.fill((0, 0, 0))
 
-            for ev in pygame.event.get():
-                if ev.type == QUIT:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     running = False
-                if ev.type == MOUSEMOTION:
+                if event.type == pygame.MOUSEMOTION:
                     cursor.mousepos = pygame.mouse.get_pos()
                     cursor.update()
-                if ev.type == KEYDOWN:
-                    if ev.key == K_ESCAPE:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
                         running = False
-                    if ev.key == K_q:
+                    if event.key == pygame.K_q:
                         running = False
-                    if ev.key == K_RETURN:
+                    if event.key == pygame.K_RETURN:
                         switch_context("game")
                         switch_context("menu")
                         running = False
-                if play_text["rect"].collidepoint(mp):
+                if play_text["rect"].collidepoint(mouse_position):
                     play_text_color = pygame.Color("white")
                     play_text["text"] = lib.h1("PLAY", play_text_color)
-                    play_text_colliding = True
-                    if ev.type == MOUSEBUTTONDOWN:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
                         switch_context("game")
                         switch_context("menu")
                         running = False
                 else:
                     play_text_color = pygame.Color("grey")
                     play_text["text"] = lib.h1("PLAY", play_text_color)
-                    play_text_colliding = False
 
-            play_text["rect"].y = (SIZE[1] / 2 - play_text["text"].get_height() / 2) + math.sin(time.time() * 4) * 6
 
+            play_text["rect"].y = (SIZE[1] / 2 - play_text["text"].get_height() / 2) + math.sin(delta_time * 4) * 6
             SCREEN.blit(play_text["text"], play_text["rect"])
             SCREEN.blit(cursor.image, cursor.rect)
 
@@ -150,19 +140,18 @@ def main():
 
         while running:
             for event in pygame.event.get():
-                if event.type == MOUSEMOTION:
+                if event.type == pygame.MOUSEMOTION:
                     cursor.mousepos = pygame.mouse.get_pos()
                     cursor.update()
-                if event.type == QUIT:
+                if event.type == pygame.QUIT:
                     running = False
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        running = False 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
 
             level.run()
 
             SCREEN.blit(cursor.image, cursor.rect)
-
             pygame.display.update()
             clock.tick(60)
 

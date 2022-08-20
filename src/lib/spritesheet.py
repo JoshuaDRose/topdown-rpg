@@ -1,9 +1,11 @@
-import pygame
-from pygame.locals import *
+""" Spritesheet file """
 
 import os
 import sys
 import glob
+
+import pygame
+from pygame.locals import *
 
 if not pygame.display.get_init():
     pygame.display.init()

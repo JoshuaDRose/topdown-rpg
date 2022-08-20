@@ -1,15 +1,21 @@
+""" player.py """
 import os
-import pygame
 import time
+import pygame
+
+from pygame.locals import *
+
 import lib
+
 from .animator import Animator as anim
 from .spritesheet import *
-from pygame.locals import *
 from .consts import *
 from .utils import *
 from .timer import Timer
 
+
 class Player(pygame.sprite.Sprite):
+    """ Player class controllable by user """
     def __init__(self, position, groups):
         super().__init__(groups)
         spritesheet = load_sprite_sheet(r'sprites/world/tileset/gfx/character.png')
@@ -110,19 +116,22 @@ class Player(pygame.sprite.Sprite):
             (32, 96, 16, 32),
             (48, 96, 16, 32),]]
 
-        for index, array in enumerate(self.walking_positions):
+        for index, _ in enumerate(self.walking_positions):
+            # pylint: disable=C0103
             for n in self.walking_positions[index]:
                 scaled = (scale_normal(n, 3)[0], scale_normal(n, 3)[1], n[2] * 3, n[3] * 3)
                 image = image_at(self.spritesheet, scaled)
                 self.walking[index].append(image)
             self.idle[index].append(self.walking_positions[index][0])
 
-        for index, array in enumerate(self.slash_animation):
+        for index, _ in enumerate(self.slash_animation):
+            # pylint: disable=C0103
             for n in self.slash_animation[index]:
                 scaled = (scale_normal(n, 3)[0], scale_normal(n, 3)[1], n[2] * 3, n[3] * 3)
                 image = image_at(self.spritesheet, scaled)
                 self.slashing[index].append(image)
 
+        # pylint: disable=C0103
         self.n = 0
         self.tick = 0
         self.image = self.walking[self.state][self.n]
@@ -130,6 +139,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = self.vec((WIDTH / 2 - self.rect.width / 2, 385))
         self.temp_pos = self.vec(self.pos)
 
+        # pylint: disable=C0103
         self.up = False
         self.down = False
         self.left = False
@@ -145,6 +155,7 @@ class Player(pygame.sprite.Sprite):
         self.attack_cooldown = 0
 
     def draw_debug(self):
+        """ Draw debug overlay """
         self.player_tick.draw_text('player tick', self.tick)
         self.player_state.draw_text('player state', self.state)
         self.player_velocity.draw_text('speed', f'{round(self.vel.x, 1)} {round(self.vel.y, 1)}')
@@ -204,6 +215,7 @@ class Player(pygame.sprite.Sprite):
             #     self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
 
     def reset_movement(self):
+        """ Reset player movement """
         self.vel.x = 0
         self.vel.y = 0
         self.acc.x = 0
@@ -224,8 +236,7 @@ class Player(pygame.sprite.Sprite):
             self.left = True
         else:
             self.left = False
-            if self.acc.x < 0:
-                self.acc.x = 0
+            self.acc.x = max(self.acc.x, 0)
 
         if pressed_keys[K_RIGHT]:
             if not self.attacking:
@@ -234,8 +245,7 @@ class Player(pygame.sprite.Sprite):
             self.right = True
         else:
             self.right = False
-            if self.acc.x > 0:
-                self.acc.x = 0
+            self.acc.x = min(self.acc.x, 0)
 
         if pressed_keys[K_UP]:
             if not self.attacking:
@@ -244,8 +254,7 @@ class Player(pygame.sprite.Sprite):
             self.up = True
         else:
             self.up = False
-            if self.acc.y < 0:
-                self.acc.y = 0
+            self.acc.y = max(self.acc.y, 0)
 
         if pressed_keys[K_DOWN]:
             if not self.attacking:
@@ -254,11 +263,10 @@ class Player(pygame.sprite.Sprite):
             self.down = True
         else:
             self.down = False
-            if self.acc.y > 0:
-                self.acc.y = 0
+            self.acc.x = min(self.acc.x, 0)
 
         if pressed_keys[K_c]:
-            """ NOTE: Cannot move and attack simultaneously """
+            # Cannot move and attack simultaneously
             if not self.attacking:
                 if not self.holding_attack:
                     self.n = 0

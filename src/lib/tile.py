@@ -1,6 +1,7 @@
-import pygame
+""" contains tile classes """
 import random
 import glob
+import pygame
 
 
 class Grass(pygame.sprite.Sprite):

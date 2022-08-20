@@ -1,3 +1,4 @@
+""" Utils.py """
 import pygame
 
 if not pygame.display.init():
@@ -5,6 +6,7 @@ if not pygame.display.init():
     pygame.display.init()
 
 def scale_normal(size, factor):
+    """ Scale by a given factor """
     return (size[0] * factor, size[1] * factor)
 
 def scale_sprite(sprite, factor) -> tuple:

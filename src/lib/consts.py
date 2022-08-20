@@ -1,3 +1,4 @@
+""" Consts """
 FRIC = -0.12
 ACC = 0.5
 WIDTH = 1280

@@ -1,6 +1,8 @@
+""" Debugging file """
 import pygame
 
 class Text:
+    """ For text and typographic operations """
     pygame.font.init()
     debugs = []
     font = pygame.font.Font(None, 30)
