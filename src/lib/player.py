@@ -22,12 +22,13 @@ class Player(pygame.sprite.Sprite):
         self.idle        = [[], [], [], [], []]
         self.slashing    = [[], [], [], [], []]
 
-        self.player_tick         = lib.debug.Text((0, 0))
-        self.player_state        = lib.debug.Text((0, 20))
-        self.player_velocity     = lib.debug.Text((0, 40))
-        self.player_position     = lib.debug.Text((0, 60))
-        self.player_attack_tick  = lib.debug.Text((0, 80))
-        self.player_acceleration = lib.debug.Text((0, 100))
+        self.player_tick            = lib.debug.Text((0, 0))
+        self.player_state           = lib.debug.Text((0, 20))
+        self.player_velocity        = lib.debug.Text((0, 40))
+        self.player_position        = lib.debug.Text((0, 60))
+        self.player_attack_tick     = lib.debug.Text((0, 80))
+        self.player_acceleration    = lib.debug.Text((0, 100))
+        self.player_attack_cooldown = lib.debug.Text((0, 120))
 
         self.vec = pygame.math.Vector2
         self.vel = self.vec(0, 0)
@@ -141,6 +142,7 @@ class Player(pygame.sprite.Sprite):
         self.change_after  = False
         self.origin_pos = self.vec(self.pos.x, self.pos.y)
         self.offset_x = 300
+        self.attack_cooldown = 0
 
     def draw_debug(self):
         self.player_tick.draw_text('player tick', self.tick)
@@ -149,24 +151,26 @@ class Player(pygame.sprite.Sprite):
         self.player_position.draw_text('position', f'{round(self.pos.x, 2)} {round(self.pos.y, 2)}')
         self.player_attack_tick.draw_text('attack', self.attacking)
         self.player_acceleration.draw_text('accel', f'{round(self.acc.x, 3)} {round(self.acc.y, 1)}')
+        self.player_attack_cooldown.draw_text('cooldown', f'{self.attack_cooldown}')
 
     def attack(self):
         """ Swing sword """
-        print(self.pos)
         if self.attacking:
-            if self.state == 0:
-                self.state = 1
-            if self.tick == 10:
-                self.n += 1
-                if self.n >= len(self.slashing[self.state]):
-                    self.attacking = False
-                    self.n = 0
+            if self.attack_cooldown == 0:
+                if self.state == 0:
+                    self.state = 1
+                if self.tick == 10:
+                    self.n += 1
+                    if self.n >= len(self.slashing[self.state]):
+                        self.attacking = False
+                        self.attack_cooldown = 50
+                        self.n = 0
+                        self.tick = 0
+                    else:
+                        self.image = self.slashing[self.state][self.n]
                     self.tick = 0
-                else:
-                    self.image = self.slashing[self.state][self.n]
-                self.tick = 0
-            self.tick += 1
-            self.rect = self.image.get_rect()
+                self.tick += 1
+                # self.rect = self.image.get_rect()
         else:
             self.tick = 0
 
@@ -192,7 +196,12 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.walking[self.state][self.n]
                 self.tick = 0
             self.tick += 1
-            self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
+            if self.attack_cooldown > 0:
+                self.attack_cooldown -= 1
+            # if self.attacking:
+            #     self.rect = self.image.get_rect(center=(self.pos.x, self.pos.y / 2))
+            # else:
+            #     self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
 
     def reset_movement(self):
         self.vel.x = 0
@@ -254,7 +263,6 @@ class Player(pygame.sprite.Sprite):
                 if not self.holding_attack:
                     self.n = 0
                     self.attacking = True
-
         else:
             self.holding_attack = False
 
