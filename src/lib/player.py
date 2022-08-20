@@ -25,8 +25,9 @@ class Player(pygame.sprite.Sprite):
         self.player_tick         = lib.debug.Text((0, 0))
         self.player_state        = lib.debug.Text((0, 20))
         self.player_velocity     = lib.debug.Text((0, 40))
-        self.player_attack_tick  = lib.debug.Text((0, 60))
-        self.player_acceleration = lib.debug.Text((0, 80))
+        self.player_position     = lib.debug.Text((0, 60))
+        self.player_attack_tick  = lib.debug.Text((0, 80))
+        self.player_acceleration = lib.debug.Text((0, 100))
 
         self.vec = pygame.math.Vector2
         self.vel = self.vec(0, 0)
@@ -126,6 +127,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.walking[self.state][self.n]
         self.rect = pygame.Rect(position, (16, 16))
         self.pos = self.vec((WIDTH / 2 - self.rect.width / 2, 385))
+        self.temp_pos = self.vec(self.pos)
 
         self.up = False
         self.down = False
@@ -135,19 +137,25 @@ class Player(pygame.sprite.Sprite):
 
         self.attacking = False
         self.holding_attack = False
+        self.change_before = False
+        self.change_after  = False
+        self.origin_pos = self.vec(self.pos.x, self.pos.y)
+        self.offset_x = 300
 
     def draw_debug(self):
         self.player_tick.draw_text('player tick', self.tick)
         self.player_state.draw_text('player state', self.state)
         self.player_velocity.draw_text('speed', f'{round(self.vel.x, 1)} {round(self.vel.y, 1)}')
+        self.player_position.draw_text('position', f'{round(self.pos.x, 2)} {round(self.pos.y, 2)}')
         self.player_attack_tick.draw_text('attack', self.attacking)
         self.player_acceleration.draw_text('accel', f'{round(self.acc.x, 3)} {round(self.acc.y, 1)}')
 
-
-
     def attack(self):
         """ Swing sword """
+        print(self.pos)
         if self.attacking:
+            if self.state == 0:
+                self.state = 1
             if self.tick == 10:
                 self.n += 1
                 if self.n >= len(self.slashing[self.state]):
@@ -156,9 +164,11 @@ class Player(pygame.sprite.Sprite):
                     self.tick = 0
                 else:
                     self.image = self.slashing[self.state][self.n]
-                    print(self.image.get_rect())
                 self.tick = 0
             self.tick += 1
+            self.rect = self.image.get_rect()
+        else:
+            self.tick = 0
 
     def regulate_frames(self):
         """ Statute the player frame rate to a set interavl """
@@ -182,9 +192,13 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.walking[self.state][self.n]
                 self.tick = 0
             self.tick += 1
-            print(self.image.get_rect())
             self.rect = self.image.get_rect(center=(self.pos.x / 2, self.pos.y / 2))
 
+    def reset_movement(self):
+        self.vel.x = 0
+        self.vel.y = 0
+        self.acc.x = 0
+        self.acc.y = 0
 
     def update(self):
         """ Update vectors and animation """
@@ -240,9 +254,9 @@ class Player(pygame.sprite.Sprite):
                 if not self.holding_attack:
                     self.n = 0
                     self.attacking = True
+
         else:
             self.holding_attack = False
-
 
         if self.acc.x == 0 and self.acc.y == 0:
             self.stop = True
@@ -253,31 +267,34 @@ class Player(pygame.sprite.Sprite):
 
         if self.attacking:
             moving = False
-            self.attack()
+            if self.change_before:
+                self.attack()
+            else:
+                self.n = 0
+                self.reset_movement()
+                self.change_before = True
         else:
             self.animation = self.walking_positions[self.state]
 
-        if abs(self.acc.x) < self.current_maxvel:
-            self.acc.x += round(self.vel.x * FRIC, 7)
-
-        if abs(self.acc.y) < self.current_maxvel:
-            self.acc.y += round(self.vel.y * FRIC, 7)
-
         if not moving:
-            self.vel.x = 0
-            self.vel.y = 0
-            self.acc.x = 0
-            self.acc.y = 0
+            self.reset_movement()
         else:
             self.do_movement = 1
 
         if self.do_movement:
+            if abs(self.acc.x) < self.current_maxvel:
+                self.acc.x += round(self.vel.x * FRIC, 7)
+
+            if abs(self.acc.y) < self.current_maxvel:
+                self.acc.y += round(self.vel.y * FRIC, 7)
             self.vel += self.acc
 
             self.pos.x += self.vel.x + 0.5 * self.acc.x
             self.rect.centerx = self.pos.x
 
             self.pos.y += self.vel.y + 0.5 * self.acc.y
+        else:
+            self.rect.centerx = self.pos.x
             self.rect.centery = self.pos.y
 
         self.regulate_frames()

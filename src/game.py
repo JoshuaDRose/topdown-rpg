@@ -139,6 +139,7 @@ def main():
 
             play_text["rect"].y = (SIZE[1] / 2 - play_text["text"].get_height() / 2) + math.sin(time.time() * 4) * 6
 
+
             SCREEN.blit(play_text["text"], play_text["rect"])
             SCREEN.blit(cursor.image, cursor.rect)
 
