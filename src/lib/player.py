@@ -263,7 +263,7 @@ class Player(pygame.sprite.Sprite):
             self.down = True
         else:
             self.down = False
-            self.acc.x = min(self.acc.x, 0)
+            self.acc.x = min(self.acc.y, 0)
 
         if pressed_keys[K_c]:
             # Cannot move and attack simultaneously
